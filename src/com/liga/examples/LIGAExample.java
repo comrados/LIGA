@@ -8,6 +8,7 @@
 package com.liga.examples;
 
 import com.liga.LIGA;
+import com.liga.TextFileLoader;
 import com.liga.Tokenizer;
 
 import java.io.File;
@@ -18,6 +19,18 @@ public class LIGAExample {
 
         // Create LIGA instance
         LIGA liga = new LIGA().setThreshold(0.5).setLogLIGA(true).setMaxSearchDepth(1000);
+
+        TextFileLoader.readFilesToModelUpper(new File("I:\\Work\\datasets\\liga_publication_dataset"), liga, 3);
+
+        liga.saveModel("res" + File.separator + "model_orig.liga");
+
+        liga.classify(Tokenizer.preprocess("absolutamente asqueroso"), 3); //es
+        liga.classify(Tokenizer.preprocess("absolutely disgusting"), 3); //en
+        liga.classify(Tokenizer.preprocess("absolut widerlich"), 3); //de
+        liga.classify(Tokenizer.preprocess("absolument dégoûtant"), 3); //fr
+        liga.classify(Tokenizer.preprocess("absoluut walgelijk"), 3); //nl
+
+        liga.dropModel();
 
         // learn test model from following entries
         liga.addDocument("Ich gehe nach Hause.", "de", 3);

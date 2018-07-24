@@ -67,7 +67,7 @@ public class Tokenizer {
 		List<String> tokens = new LinkedList<>();
 		for (String token : tokensA) {
 			if (tokenCheck(token)) {
-				tokens.add(token);
+				tokens.add(token.replaceAll("['‘’]", ""));
 			}
 		}
 		return tokens;
