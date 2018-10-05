@@ -41,10 +41,10 @@ public class Tokenizer {
 	 */
 	public static String preprocess(String text){
 		List<String> pureTokens = tokenizeToList(text);
-		String output = "";
+		StringBuilder output = new StringBuilder();
 		for (String token: pureTokens)
-			output += token + " ";
-		return output.trim();
+			output.append(token).append(" ");
+		return output.toString().trim();
 	}
 
 	/**
