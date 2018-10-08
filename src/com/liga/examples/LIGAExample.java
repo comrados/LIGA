@@ -9,26 +9,25 @@ package com.liga.examples;
 
 import com.liga.DataLoader;
 import com.liga.LIGA;
+import com.liga.TextFileLoader;
 import com.liga.Tokenizer;
+import org.apache.commons.lang3.tuple.MutablePair;
 
 import java.io.File;
+import java.util.List;
 
 public class LIGAExample {
 
     public static void main(String[] args) {
 
-        String dir = "I:\\Work\\datasets\\liga_publication_dataset";
-        DataLoader dataLoader = new DataLoader.DataLoaderBuilder(dir).build();
-        dataLoader.readFilesUpper();
 
-        dataLoader.shuffleData(0);
 
         // Create LIGA instance
         LIGA liga = new LIGA().setThreshold(0.5).setLogLIGA(true).setMaxSearchDepth(1000);
 
-        //TextFileLoader.readFilesToModelUpper(new File("I:\\Work\\datasets\\liga_publication_dataset"), liga, 3);
+        TextFileLoader.readFilesToModelUpper(new File("I:\\Work\\datasets\\liga_publication_dataset"), liga, 3);
 
-        //liga.saveModel("res" + File.separator + "model_orig.liga");
+        liga.saveModel("res" + File.separator + "model_orig.liga");
 
         liga.classify(Tokenizer.preprocess("absolutamente asqueroso"), 3); //es
         liga.classify(Tokenizer.preprocess("absolutely disgusting"), 3); //en

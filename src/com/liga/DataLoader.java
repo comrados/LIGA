@@ -7,6 +7,8 @@
 
 package com.liga;
 
+import org.apache.commons.lang3.tuple.MutablePair;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -15,14 +17,18 @@ import java.util.*;
 
 public class DataLoader {
 
-    public Map<String, List<String>> data;
+    //public Map<String, List<String>> data;
+    public List<MutablePair<String, String>> dataset;
     public int n; // ngram length
     private File directory; //path
+    private double split; // split (specify the size of training data from 0 to 1)
 
     public DataLoader(DataLoaderBuilder builder){
-        this.data = builder.data;
         this.n = builder.n;
         this.directory = new File(builder.directory);
+        this.split = builder.split;
+        //this.data = new HashMap<>();
+        this.dataset = new ArrayList<>();
     }
 
     /**
@@ -50,16 +56,18 @@ public class DataLoader {
      */
     public void readFilesLower(File directory) {
         String lang = directory.getName();
-        List<String> texts = new ArrayList<>();
+        //List<String> texts = new ArrayList<>();
         if (directory.listFiles() != null) {
             for (File fileEntry : directory.listFiles()) {
                 if (fileEntry.isFile()) {
                     String text = readTextFromFile(fileEntry);
-                    if (!text.isEmpty())
-                        texts.add(text);
+                    if (!text.isEmpty()){
+                        //texts.add(text);
+                        dataset.add(new MutablePair<>(lang, text));
+                    }
                 }
             }
-            data.put(lang, texts);
+            //data.put(lang, texts);
         } else {
             System.out.println("Directory " + directory.getAbsolutePath() + " is empty");
         }
@@ -88,33 +96,56 @@ public class DataLoader {
      * @param seed seed for shuffling
      */
     public void shuffleData(int seed){
-        for (Map.Entry<String, List<String>> entry: data.entrySet()){
-            Collections.shuffle(entry.getValue(), new Random(seed));
-        }
+        //for (Map.Entry<String, List<String>> entry: data.entrySet())
+            //Collections.shuffle(entry.getValue(), new Random(seed));
+        Collections.shuffle(dataset, new Random(seed));
     }
 
     /**
      * Shuffle loaded data (random seed)
      */
     public void shuffleData(){
-        for (Map.Entry<String, List<String>> entry: data.entrySet()){
-            Collections.shuffle(entry.getValue());
-        }
+        //for (Map.Entry<String, List<String>> entry: data.entrySet())
+            //Collections.shuffle(entry.getValue());
+        Collections.shuffle(dataset);
+    }
+
+    /**
+     * Returns training set
+     */
+    public List<MutablePair<String, String>> getTrainSet(){
+        int splitId = (int) (dataset.size() * split);
+        return dataset.subList(0, splitId);
+    }
+
+    /**
+     * Returns test set
+     */
+    public List<MutablePair<String, String>> getTestSet(){
+        int splitId = (int) (dataset.size() * split);
+        return dataset.subList(splitId, dataset.size());
+    }
+
+    /**
+     * Removes all loaded instances from dataset
+     */
+    public void dropDataset(){
+        dataset.clear();
     }
 
     public static class DataLoaderBuilder {
 
-        private Map<String, List<String>> data = new HashMap<>();
         private int n = 3; // ngram length
         private String directory; //path
-
-        public DataLoaderBuilder setData(Map<String, List<String>> data) {
-            this.data = data;
-            return this;
-        }
+        private double split = 0.9; // split (specify the size of training data from 0 to 1)
 
         public DataLoaderBuilder setN(int n) {
             this.n = n;
+            return this;
+        }
+
+        public DataLoaderBuilder setSplit(double split) {
+            this.split = split;
             return this;
         }
 
