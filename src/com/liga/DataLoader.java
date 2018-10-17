@@ -21,14 +21,53 @@ public class DataLoader {
     public List<MutablePair<String, String>> dataset;
     public int n; // ngram length
     private File directory; //path
-    private double split; // split (specify the size of training data from 0 to 1)
+
+    private long seed; // shuffle seed
+    private int shuffleN; //number of shufflings
+
+    public List<MutablePair<String, String>> train = new ArrayList<>(); // training data
+    public List<MutablePair<String, String>> test = new ArrayList<>(); // testing data
+    public List<MutablePair<String, String>> init = new ArrayList<>(); // initial labeled data
+
+    private double trainThresholdPart; // % of all data labeled before stop of active learning
+    private int trainThreshold = 0; // training threshold as number
+    private double testDataPart; // test data %
+    private double initDataPart; // initial-labeled data, part of training one (rest is used in active learning)
+
+    public double getTrainThresholdPart() {
+        return trainThresholdPart;
+    }
+
+    public void setTrainThresholdPart(double trainThresholdPart) {
+        this.trainThresholdPart = trainThresholdPart;
+    }
+
+    public double getTestDataPart() {
+        return testDataPart;
+    }
+
+    public void setTestDataPart(double testDataPart) {
+        this.testDataPart = testDataPart;
+    }
+
+    public double getInitDataPart() {
+        return initDataPart;
+    }
+
+    public void setInitDataPart(double initDataPart) {
+        this.initDataPart = initDataPart;
+    }
 
     public DataLoader(DataLoaderBuilder builder){
         this.n = builder.n;
         this.directory = new File(builder.directory);
-        this.split = builder.split;
         //this.data = new HashMap<>();
         this.dataset = new ArrayList<>();
+        this.seed = builder.seed;
+        this.shuffleN = builder.shuffleN;
+        this.trainThresholdPart = builder.trainThresholdPart;
+        this.testDataPart = builder.testDataPart;
+        this.initDataPart = builder.initDataPart;
     }
 
     /**
@@ -93,37 +132,20 @@ public class DataLoader {
     /**
      * Shuffle loaded data (with seed)
      *
-     * @param seed seed for shuffling
+     * @param seed seed
+     * @param n number of shuffle iterations
      */
-    public void shuffleData(int seed){
-        //for (Map.Entry<String, List<String>> entry: data.entrySet())
-            //Collections.shuffle(entry.getValue(), new Random(seed));
-        Collections.shuffle(dataset, new Random(seed));
+    public void shuffleData(long seed, int n){
+        if (n < 1) n = 1;
+        for (int i = 0; i < n; i++) Collections.shuffle(dataset, new Random(seed));
     }
 
     /**
-     * Shuffle loaded data (random seed)
+     * Shuffle loaded data (with random seed)
      */
     public void shuffleData(){
-        //for (Map.Entry<String, List<String>> entry: data.entrySet())
-            //Collections.shuffle(entry.getValue());
-        Collections.shuffle(dataset);
-    }
-
-    /**
-     * Returns training set
-     */
-    public List<MutablePair<String, String>> getTrainSet(){
-        int splitId = (int) (dataset.size() * split);
-        return dataset.subList(0, splitId);
-    }
-
-    /**
-     * Returns test set
-     */
-    public List<MutablePair<String, String>> getTestSet(){
-        int splitId = (int) (dataset.size() * split);
-        return dataset.subList(splitId, dataset.size());
+        if (shuffleN < 0) shuffleN = 25;
+        for (int i = 0; i < n; i++) Collections.shuffle(dataset, new Random(seed));
     }
 
     /**
@@ -133,19 +155,93 @@ public class DataLoader {
         dataset.clear();
     }
 
+    public boolean hasData(){
+        return (dataset.size() > 0);
+    }
+
+    /**
+     * Splits original dataset (testing method)
+     */
+    public void getTestData(){
+
+        if (this.hasData()){
+            this.shuffleData();
+
+            // get train and test sets
+            train = splitBot(this.dataset, testDataPart);
+            test = splitTop(this.dataset, testDataPart);
+            // calculate threshold, free the memory
+            trainThreshold = train.size() * trainThreshold;
+            //loader.dropDataset();
+            // get sets for active learning
+            init = splitTop(train, initDataPart);
+            train = splitBot(train, initDataPart);
+        } else {
+            System.err.println("No data was loaded");
+        }
+
+    }
+
+    /**
+     * Returns top part of dataset
+     *
+     * @param dataset dataset to split
+     * @param split split coefficient
+     */
+    private List<MutablePair<String, String>> splitTop(List<MutablePair<String, String>> dataset, double split){
+        int splitId = (int) (dataset.size() * split);
+        return dataset.subList(0, splitId);
+    }
+
+    /**
+     * Returns bottom part of dataset
+     *
+     * @param dataset dataset to split
+     * @param split split coefficient
+     */
+    private List<MutablePair<String, String>> splitBot(List<MutablePair<String, String>> dataset, double split){
+        int splitId = (int) (dataset.size() * split);
+        return dataset.subList(splitId, dataset.size());
+    }
+
     public static class DataLoaderBuilder {
 
         private int n = 3; // ngram length
         private String directory; //path
-        private double split = 0.9; // split (specify the size of training data from 0 to 1)
+        private long seed = 0; // shuffle seed
+        private int shuffleN = 25; //number of shufflings
+
+        private double trainThresholdPart = 0.5; // % of all data labeled before stop of active learning
+        private double testDataPart = 0.1; // test data %
+        private double initDataPart = 0.1; // initial-labeled data, part of training one (rest is used in active learning)
 
         public DataLoaderBuilder setN(int n) {
             this.n = n;
             return this;
         }
 
-        public DataLoaderBuilder setSplit(double split) {
-            this.split = split;
+        public DataLoaderBuilder setSeed(long seed) {
+            this.seed = seed;
+            return this;
+        }
+
+        public DataLoaderBuilder setShuffleN(int shuffleN) {
+            this.shuffleN = shuffleN;
+            return this;
+        }
+
+        public DataLoaderBuilder setTrainThresholdPart(double trainThresholdPart) {
+            this.trainThresholdPart = trainThresholdPart;
+            return this;
+        }
+
+        public DataLoaderBuilder setTestDataPart(double testDataPart) {
+            this.testDataPart = testDataPart;
+            return this;
+        }
+
+        public DataLoaderBuilder setInitDataPart(double initDataPart) {
+            this.initDataPart = initDataPart;
             return this;
         }
 

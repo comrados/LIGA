@@ -34,27 +34,24 @@ public class LIGA {
         return threshold;
     }
 
-    public LIGA setThreshold(double threshold) {
+    public void setThreshold(double threshold) {
         this.threshold = threshold;
-        return this;
     }
 
     public int getMaxSearchDepth() {
         return maxSearchDepth;
     }
 
-    public LIGA setMaxSearchDepth(int maxSearchDepth) {
+    public void setMaxSearchDepth(int maxSearchDepth) {
         this.maxSearchDepth = maxSearchDepth;
-        return this;
     }
 
     public boolean isLogLIGA() {
         return logLIGA;
     }
 
-    public LIGA setLogLIGA(boolean logLIGA) {
+    public void setLogLIGA(boolean logLIGA) {
         this.logLIGA = logLIGA;
-        return this;
     }
 
     public TreeMap<String, TreeMap<String, Integer>> getNodes() {
@@ -67,6 +64,23 @@ public class LIGA {
 
     public TreeMap<String, MutablePair<Integer, Integer>> getCounter() {
         return counter;
+    }
+
+    public LIGA(LIGABuilder builder){
+        this.threshold = builder.threshold;
+        this.maxSearchDepth = builder.maxSearchDepth;
+        this.logLIGA = builder.logLIGA;
+    }
+
+    /**
+     * Adds the loaded dataset to model
+     *
+     * @param dataset
+     */
+    public void addDataset(List<MutablePair<String, String>> dataset, int ngramLength){
+        for (MutablePair<String, String> entry: dataset){
+            addDocument(entry.right, entry.left, ngramLength);
+        }
     }
 
     /**
@@ -292,6 +306,27 @@ public class LIGA {
 
         // Return best scoring language
         return bestLang;
+    }
+
+    /**
+     * Gets scores for a given document
+     *
+     * @param doc document
+     * @param ngramLength n
+     */
+    public Map<String, Double> getScores(String doc, int ngramLength){
+        Map<String, Double> scores = new HashMap<>();
+        if (modelIsNotEmpty()) {
+            // Get all N-grams into a list
+            List<String> ngrams = getNgrams(doc, ngramLength);
+
+            // Get counts
+            Map<String, MutablePair<Integer, Integer>> counts = recPathMatching(ngrams, new HashMap<>(), 0, maxSearchDepth);
+
+            // Calculate scores
+            scores = calcScores(counts);
+        }
+        return scores;
     }
 
     /**
@@ -623,5 +658,35 @@ public class LIGA {
         jGenerator.writeEndObject();
     }
 
+    public static class LIGABuilder {
+
+        // confidence threshold (if lower - language is still UNKNOWN)
+        private double threshold;
+        // max recursive search depth
+        private int maxSearchDepth = 1000;
+        // flag of model, if true - logLIGA, false - LIGA
+        private boolean logLIGA = true;
+
+        public LIGABuilder setMaxSearchDepth(int maxSearchDepth) {
+            this.maxSearchDepth = maxSearchDepth;
+            return this;
+        }
+
+        public LIGABuilder setLogLIGA(boolean logLIGA) {
+            this.logLIGA = logLIGA;
+            return this;
+        }
+
+        /**
+         * builder
+         */
+        public LIGABuilder(double threshold) {
+            this.threshold = threshold;
+        }
+
+        public LIGA build() {
+            return new LIGA(this);
+        }
+    }
 
 }
