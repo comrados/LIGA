@@ -17,23 +17,24 @@ public class ActiveLIGAExample {
 
         // data loader instance
         String dir = "I:\\Work\\datasets\\liga_publication_dataset";
-        DataLoader dl = new DataLoader.DataLoaderBuilder(dir).setN(3).setShuffleN(25).setSeed(0).
-                setTrainThresholdPart(0.25).setTestDataPart(0.1).setInitDataPart(0.05).build();
+        DataLoader dl = new DataLoader.DataLoaderBuilder(dir).setN(3).setShuffleN(25).setSeed(0)
+                .setTestDataPart(0.1).setInitDataPart(0.05).build();
 
         // obtain datasets for training and testing
-        dl.readFilesUpper();
+        dl.loadUpper();
         dl.getTestData();
 
         // oracle instance
-        Oracle ora = new AutomatedOracle();
+        Oracle ora = new AutoOracle();
 
         // sampler instance
-        Sampler sam = new MarginSampler();
+        Sampler sam = new MarginSampler.MarginSamplerBuilder(25).build();
 
         // LIGA instance
         LIGA liga = new LIGA.LIGABuilder(0.5).setLogLIGA(true).setMaxSearchDepth(1000).build();
 
-        ActiveLearner learner = new ActiveLearner.ActiveLearnerBuilder(ora, sam, liga).build();
+        ActiveLearner learner = new ActiveLearner.ActiveLearnerBuilder(ora, sam, liga)
+                .setTrainThreshold(0.10).build();
 
         learner.setDatasets(dl.init, dl.train, dl.test);
 

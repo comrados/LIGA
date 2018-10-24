@@ -14,8 +14,17 @@
 
 package com.liga.active;
 
+import org.apache.commons.lang3.tuple.MutablePair;
+
+import java.util.List;
+
 public interface Oracle {
 
-    //TODO get label for a sample
+    /**
+     * returns labeled list
+     *
+     * @param list list to lable
+     */
+    List<MutablePair<String, String>> getLabels(List<MutablePair<String, String>> list);
 
 }

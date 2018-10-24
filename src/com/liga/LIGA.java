@@ -17,7 +17,7 @@ import org.apache.commons.lang3.tuple.MutablePair;
 
 public class LIGA {
 
-    boolean debug = true;
+    private boolean debug = false;
 
     // confidence threshold (if lower - language is still UNKNOWN)
     private double threshold = 0.0125;
@@ -273,7 +273,7 @@ public class LIGA {
      *
      * @param doc original document
      */
-    public String classify(String doc, int ngramLength) {
+    public String classifyMostProbable(String doc, int ngramLength) {
 
         if (debug) System.out.println(doc);
 
@@ -314,7 +314,7 @@ public class LIGA {
      * @param doc document
      * @param ngramLength n
      */
-    public Map<String, Double> getScores(String doc, int ngramLength){
+    public Map<String, Double> classifyAll(String doc, int ngramLength){
         Map<String, Double> scores = new HashMap<>();
         if (modelIsNotEmpty()) {
             // Get all N-grams into a list

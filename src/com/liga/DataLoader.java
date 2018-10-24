@@ -17,7 +17,8 @@ import java.util.*;
 
 public class DataLoader {
 
-    //public Map<String, List<String>> data;
+    private boolean debug = true;
+
     public List<MutablePair<String, String>> dataset;
     public int n; // ngram length
     private File directory; //path
@@ -29,18 +30,8 @@ public class DataLoader {
     public List<MutablePair<String, String>> test = new ArrayList<>(); // testing data
     public List<MutablePair<String, String>> init = new ArrayList<>(); // initial labeled data
 
-    private double trainThresholdPart; // % of all data labeled before stop of active learning
-    private int trainThreshold = 0; // training threshold as number
     private double testDataPart; // test data %
     private double initDataPart; // initial-labeled data, part of training one (rest is used in active learning)
-
-    public double getTrainThresholdPart() {
-        return trainThresholdPart;
-    }
-
-    public void setTrainThresholdPart(double trainThresholdPart) {
-        this.trainThresholdPart = trainThresholdPart;
-    }
 
     public double getTestDataPart() {
         return testDataPart;
@@ -61,11 +52,9 @@ public class DataLoader {
     public DataLoader(DataLoaderBuilder builder){
         this.n = builder.n;
         this.directory = new File(builder.directory);
-        //this.data = new HashMap<>();
         this.dataset = new ArrayList<>();
         this.seed = builder.seed;
         this.shuffleN = builder.shuffleN;
-        this.trainThresholdPart = builder.trainThresholdPart;
         this.testDataPart = builder.testDataPart;
         this.initDataPart = builder.initDataPart;
     }
@@ -74,12 +63,12 @@ public class DataLoader {
      * Reads files from directory to model. Works with main (Upper) folder. Ignores non-folders (files).
      * Structure: main folder contains subfolders (language labels: "en", "de", etc.), which contain files with text (one file - one text)
      */
-    public void readFilesUpper() {
+    public void loadUpper() {
         if (directory.listFiles() != null){
             for (File fileEntry : directory.listFiles()) {
                 if (fileEntry.isDirectory()) {
-                    System.out.println(fileEntry.getAbsolutePath());
-                    readFilesLower(fileEntry);
+                    if (debug) System.out.println(fileEntry.getAbsolutePath());
+                    loadLower(fileEntry);
                 }
             }
         } else {
@@ -93,20 +82,20 @@ public class DataLoader {
      *
      * @param directory subfolder (folder name = language label)
      */
-    public void readFilesLower(File directory) {
+    public void loadLower(File directory) {
+        int count = 0;
         String lang = directory.getName();
-        //List<String> texts = new ArrayList<>();
         if (directory.listFiles() != null) {
             for (File fileEntry : directory.listFiles()) {
                 if (fileEntry.isFile()) {
                     String text = readTextFromFile(fileEntry);
                     if (!text.isEmpty()){
-                        //texts.add(text);
                         dataset.add(new MutablePair<>(lang, text));
+                        count++;
                     }
                 }
             }
-            //data.put(lang, texts);
+            if (debug) System.out.println(count + " non-empty files read");
         } else {
             System.out.println("Directory " + directory.getAbsolutePath() + " is empty");
         }
@@ -171,7 +160,6 @@ public class DataLoader {
             train = splitBot(this.dataset, testDataPart);
             test = splitTop(this.dataset, testDataPart);
             // calculate threshold, free the memory
-            trainThreshold = train.size() * trainThreshold;
             //loader.dropDataset();
             // get sets for active learning
             init = splitTop(train, initDataPart);
@@ -211,7 +199,6 @@ public class DataLoader {
         private long seed = 0; // shuffle seed
         private int shuffleN = 25; //number of shufflings
 
-        private double trainThresholdPart = 0.5; // % of all data labeled before stop of active learning
         private double testDataPart = 0.1; // test data %
         private double initDataPart = 0.1; // initial-labeled data, part of training one (rest is used in active learning)
 
@@ -227,11 +214,6 @@ public class DataLoader {
 
         public DataLoaderBuilder setShuffleN(int shuffleN) {
             this.shuffleN = shuffleN;
-            return this;
-        }
-
-        public DataLoaderBuilder setTrainThresholdPart(double trainThresholdPart) {
-            this.trainThresholdPart = trainThresholdPart;
             return this;
         }
 
