@@ -11,6 +11,9 @@ import org.apache.commons.lang3.tuple.MutablePair;
 
 import java.util.*;
 
+/**
+ * Samples according to the minimal margin between two most certain classes
+ */
 public class MarginSampler implements Sampler {
 
     private int samplesBatch; //number of samples to select

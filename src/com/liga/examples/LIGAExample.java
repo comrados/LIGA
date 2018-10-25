@@ -14,6 +14,9 @@ import com.liga.Tokenizer;
 import java.io.File;
 import java.util.Map;
 
+/**
+ * Example of LIGA class usage
+ */
 public class LIGAExample {
 
     public static void main(String[] args) {

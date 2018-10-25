@@ -11,6 +11,12 @@ import com.liga.DataLoader;
 import com.liga.LIGA;
 import com.liga.active.*;
 
+import java.util.Map;
+
+
+/**
+ * Example of active learning LIGA usage
+ */
 public class ActiveLIGAExample {
 
     public static void main(String[] args) {
@@ -39,6 +45,8 @@ public class ActiveLIGAExample {
         learner.setDatasets(dl.init, dl.train, dl.test);
 
         learner.learn();
+
+        Map<String, Double> results = learner.getResults();
 
         System.exit(0);
     }

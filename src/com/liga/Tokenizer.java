@@ -12,6 +12,10 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Tokenizer and message cleaner
+ * Can tokenize messages or return "clear" messages (without special characters)
+ */
 public class Tokenizer {
 
 	final private static String PUNCT = "[\\p{Punct}–…‹›§«»¿¡!?≠\'´\"‘’“”⟨⟩°※©℗®℠™—]"; // punctuation

@@ -15,6 +15,10 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
 
+/**
+ * Original LIGA publication data loader class
+ * Can also create testing and training sets from this data
+ */
 public class DataLoader {
 
     private boolean debug = true;

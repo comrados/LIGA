@@ -5,13 +5,6 @@
  * 2018
  */
 
-/*
- * Title: Sampler.java
- * Project: LIGA
- * Creator: Georgii Mikriukov
- * 2018
- */
-
 package com.liga.active;
 
 import org.apache.commons.lang3.tuple.MutablePair;
@@ -19,6 +12,9 @@ import org.apache.commons.lang3.tuple.MutablePair;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Sampler interface
+ */
 public interface Sampler {
 
     /**

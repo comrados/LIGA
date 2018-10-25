@@ -17,11 +17,11 @@ package com.liga.active;
 import com.liga.LIGA;
 import org.apache.commons.lang3.tuple.MutablePair;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
+/**
+ * implements active learning pipeline
+ */
 public class ActiveLearner {
 
     private boolean debug = true;
@@ -30,6 +30,7 @@ public class ActiveLearner {
     private Sampler sampler;
     private LIGA liga;
     private int ngramLength = 3;
+    private double trainThreshold; // training threshold (part of init + train)
 
     public int getNgramLength() {
         return ngramLength;
@@ -43,9 +44,7 @@ public class ActiveLearner {
     List<MutablePair<String, String>> test; // testing data
     List<MutablePair<String, String>> init; // initial labeled data
 
-    private double trainThreshold; // training threshold (part of init + train)
-
-    private Map<String, Double> results = new HashMap<>(); // hashmap with results
+    private Map<String, Double> results = new TreeMap<>(); // hashmap with results
 
     public Map<String, Double> getResults() {
         return results;
@@ -187,7 +186,7 @@ public class ActiveLearner {
             }
             p.setLeft(lang);
         }
-        results.put("wrongLablings", (double) count);
+        results.put("wrongRemainingLablings", (double) count);
         if (debug) System.out.println("Wrong relablings: " + count);
     }
 
@@ -222,6 +221,17 @@ public class ActiveLearner {
         results.put("testWrongPart", (double) (testData.size() - count) / testData.size());
 
         return results;
+    }
+
+    /**
+     * resets learning and resulting data (not the model)
+     * to reset model use LIGA instances methods
+     */
+    public void resetLearner(){
+        results.clear();
+        train.clear();
+        init.clear();
+        test.clear();
     }
 
     public static class ActiveLearnerBuilder{

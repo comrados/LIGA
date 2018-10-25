@@ -15,6 +15,10 @@ import java.util.Map.Entry;
 import com.fasterxml.jackson.core.*;
 import org.apache.commons.lang3.tuple.MutablePair;
 
+/**
+ * Main class of language identification for short texts (LIGA and logLIGA).
+ * Use it to train and classify texts, load and save models
+ */
 public class LIGA {
 
     private boolean debug = false;

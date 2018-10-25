@@ -18,6 +18,9 @@ import org.apache.commons.lang3.tuple.MutablePair;
 
 import java.util.List;
 
+/**
+ * Labeling oracle interface
+ */
 public interface Oracle {
 
     /**
