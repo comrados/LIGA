@@ -39,9 +39,7 @@ public class MarginSampler implements Sampler {
     @Override
     public List<MutablePair<String, String>> getSamples(List<MutablePair<String, String>> train,
                                                         List<Map<String, Double>> scores) {
-        List<MutablePair<String, String>> samples = new ArrayList<>();
         Map<Double, List<Integer>> margins = getMargins(scores);
-        Map<Double, List<Integer>> margins2 = getNoneOnes(margins);
         List<MutablePair<String, String>> chosen = chooseSamples(margins, train);
         return chosen;
     }
@@ -138,14 +136,6 @@ public class MarginSampler implements Sampler {
         }
         removeChosen(excl, train);
         return chosen;
-    }
-
-    private Map<Double, List<Integer>> getNoneOnes(Map<Double, List<Integer>> margs){
-        Map<Double, List<Integer>> res = new TreeMap<>();
-        for (Map.Entry<Double, List<Integer>> entry : margs.entrySet()) {
-            if (entry.getValue().size() != 1) res.put(entry.getKey(), entry.getValue());
-        }
-        return res;
     }
 
     /**

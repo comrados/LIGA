@@ -46,8 +46,14 @@ public class ActiveLearner {
 
     private Map<String, Double> results = new TreeMap<>(); // hashmap with results
 
+    private List<Map<String, Double>> intermediateResults = new ArrayList<>(); // hashmap with results
+
     public Map<String, Double> getResults() {
         return results;
+    }
+
+    public List<Map<String, Double>> getIntermediateResults() {
+        return intermediateResults;
     }
 
     public ActiveLearner(ActiveLearnerBuilder builder){
@@ -81,6 +87,10 @@ public class ActiveLearner {
                 // scores
                 List<Map<String, Double>> scores;
 
+                //clear intermediate results and run initial one
+                intermediateResults.clear();
+                intermediateResults.add(intermediateTest(iter, test));
+
                 do {
 
                     iter++;
@@ -91,8 +101,6 @@ public class ActiveLearner {
                     // samples to label
                     List<MutablePair<String, String>> samples = sampler.getSamples(train, scores);
 
-                    if (debug) System.out.println(samples.size() + " samples selected");
-
                     //label the selected samples
                     samples = oracle.getLabels(samples);
 
@@ -101,6 +109,8 @@ public class ActiveLearner {
                     count += samples.size();
 
                     if (debug) System.out.println("Training samples used: " + count);
+
+                    intermediateResults.add(intermediateTest(iter, test));
 
                 } while (count < limit);
 
@@ -125,7 +135,7 @@ public class ActiveLearner {
                 if (test == null || test.size() == 0){
                     System.err.println("No testing data");
                 } else{
-                    testModel(test);
+                    testModel();
                 }
 
             } else{
@@ -192,10 +202,8 @@ public class ActiveLearner {
 
     /**
      * compares labels assigned to the model with real labels
-     *
-     * @param testData
      */
-    public Map<String, Double> testModel(List<MutablePair<String, String>> testData){
+    private void testModel(){
 
         if (results.containsKey("testSize")) results.remove("testSize");
         if (results.containsKey("testCorrect")) results.remove("testCorrect");
@@ -205,8 +213,8 @@ public class ActiveLearner {
 
         int count = 0;
 
-        for (int i = 0; i < testData.size(); i++){
-            MutablePair<String, String> p = testData.get(i);
+        for (int i = 0; i < test.size(); i++){
+            MutablePair<String, String> p = test.get(i);
             String lang = liga.classifyMostProbable(p.getRight(), ngramLength);
             if (p.getLeft().equals(lang)){
                 count++;
@@ -214,11 +222,39 @@ public class ActiveLearner {
             p.setLeft(lang);
         }
 
-        results.put("testSize", (double) testData.size());
+        results.put("testSize", (double) test.size());
         results.put("testCorrect", (double) count);
-        results.put("testWrong", (double) (testData.size() - count));
-        results.put("testCorrectPart", (double) count / testData.size());
-        results.put("testWrongPart", (double) (testData.size() - count) / testData.size());
+        results.put("testWrong", (double) (test.size() - count));
+        results.put("testCorrectPart", (double) count / test.size());
+        results.put("testWrongPart", (double) (test.size() - count) / test.size());
+    }
+
+    /**
+     * intermediate test
+     *
+     * @param iter iteration number
+     * @param test test set
+     */
+    private Map<String, Double> intermediateTest(int iter, List<MutablePair<String, String>> test){
+        Map<String, Double> results = new TreeMap<>();
+
+        int count = 0;
+
+        for (int i = 0; i < test.size(); i++){
+            MutablePair<String, String> p = test.get(i);
+            String lang = liga.classifyMostProbable(p.getRight(), ngramLength);
+            if (p.getLeft().equals(lang)){
+                count++;
+            }
+            p.setLeft(lang);
+        }
+
+        results.put("iter", (double) iter);
+        results.put("testSize", (double) test.size());
+        results.put("testCorrect", (double) count);
+        results.put("testWrong", (double) (test.size() - count));
+        results.put("testCorrectPart", (double) count / test.size());
+        results.put("testWrongPart", (double) (test.size() - count) / test.size());
 
         return results;
     }
