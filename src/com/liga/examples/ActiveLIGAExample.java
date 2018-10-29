@@ -44,7 +44,12 @@ public class ActiveLIGAExample {
                 .setTestDataPart(test).setInitDataPart(init).build();
 
         // obtain datasets for training and testing
-        dl.loadUpper();
+        //dl.loadFromDirectorySubdirectories();
+
+        dl.loadFromFile("original_data.csv", "data", ";", 1);
+
+        //dl.saveToFile("original_data.csv", "data", ";");
+
         dl.getTestData();
 
         // oracle instance
