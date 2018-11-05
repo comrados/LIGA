@@ -109,12 +109,11 @@ public class DataLoader {
      * Load all entries from the csv-like file. Entries are: lang_code, text. Entries are divided with separator
      *
      * @param path path to save the file
-     * @param name name of the file to save
      * @param sep  separator
      * @param headers number of header lines
      */
-    public void loadFromFile(String name, String path, String sep, int headers) {
-        File file = setFileNameAndPath(name, path);
+    public void loadFromFile(String path, String sep, int headers) {
+        File file = new File(path);
         int count = 0;
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
             for (String textLine; (textLine = br.readLine()) != null; ){
@@ -137,11 +136,10 @@ public class DataLoader {
      * Load all loaded entries to the csv-like file. Entries are: lang_code, text. Entries are divided with separator
      *
      * @param path path to save the file
-     * @param name name of the file to save
      * @param sep  separator
      */
-    public void saveToFile(String name, String path, String sep) {
-        File file = setFileNameAndPath(name, path);
+    public void saveToFile(String path, String sep) {
+        File file =new File(path);
         if (checkFilePath(file)) {
             try {
                 FileOutputStream fos = new FileOutputStream(file);
@@ -277,22 +275,10 @@ public class DataLoader {
         }
     }
 
-    /**
-     * combines the path and the name of the file, creates the directory
-     *
-     * @param name name
-     * @param path path
-     */
-    private File setFileNameAndPath(String name, String path) {
-        File filePath = new File(path + File.separator + name);
-        checkFilePath(filePath);
-        return filePath;
-    }
-
     public static class DataLoaderBuilder {
 
         private int n = 3; // ngram length
-        private String directory; //path
+        private String directory = "res"; //path
         private long seed = 0; // shuffle seed
         private int shuffleN = 25; //number of shufflings
 
@@ -301,6 +287,11 @@ public class DataLoader {
 
         public DataLoaderBuilder setN(int n) {
             this.n = n;
+            return this;
+        }
+
+        public DataLoaderBuilder setDirectory(String directory) {
+            this.directory = directory;
             return this;
         }
 
@@ -327,8 +318,7 @@ public class DataLoader {
         /**
          * builder
          */
-        public DataLoaderBuilder(String dir) {
-            this.directory = dir;
+        public DataLoaderBuilder() {
         }
 
         public DataLoader build() {

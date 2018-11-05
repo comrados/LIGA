@@ -40,15 +40,15 @@ public class ActiveLIGAExample {
 
         // data loader instance
         String dir = "I:\\Work\\datasets\\liga_publication_dataset";
-        DataLoader dl = new DataLoader.DataLoaderBuilder(dir).setN(3).setShuffleN(25).setSeed(0)
+        DataLoader dl = new DataLoader.DataLoaderBuilder().setN(3).setShuffleN(25).setSeed(0).setDirectory("res")
                 .setTestDataPart(test).setInitDataPart(init).build();
 
         // obtain datasets for training and testing
         //dl.loadFromDirectorySubdirectories();
 
-        dl.loadFromFile("original_data.csv", "data", ";", 1);
+        dl.loadFromFile("res\\original_data.csv", "\t", 1);
 
-        //dl.saveToFile("original_data.csv", "data", ";");
+        //dl.saveToFile("res\\original_data.csv", "\t");
 
         dl.getTestData();
 
@@ -72,6 +72,7 @@ public class ActiveLIGAExample {
         Map<String, Double> resultsM = learnerM.getResults();
         List<Map<String, Double>> intermediateResultsM = learnerM.getIntermediateResults();
         saveResults(samM, date, params, resultsM, intermediateResultsM);
+        liga.saveModel("res" + File.separator + "model_active.liga");
 
         //clean model, start new learning
         liga.dropModel();
