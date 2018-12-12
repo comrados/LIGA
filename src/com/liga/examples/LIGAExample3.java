@@ -1,5 +1,5 @@
 /*
- * Title: LIGAExample2.java
+ * Title: LIGAExample3.java
  * Project: LIGA
  * Creator: Georgii Mikriukov
  * 2018
@@ -9,18 +9,16 @@ package com.liga.examples;
 
 import com.liga.DataLoader;
 import com.liga.LIGA;
-import com.liga.TextFileLoader;
 import com.liga.Tokenizer;
 import org.apache.commons.lang3.tuple.MutablePair;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 
-/**
- * Example of LIGA class usage
- */
-public class LIGAExample2 {
+public class LIGAExample3 {
 
     public static void main(String[] args) {
 
@@ -38,7 +36,7 @@ public class LIGAExample2 {
 
         DataLoader dl = new DataLoader.DataLoaderBuilder().build();
 
-        dl.loadFromFile("res\\data-train-new.txt", "\t", 1);
+        dl.loadFromFile("D:\\ground-truth-out.csv", "\t", 1);
 
         long t1 = System.currentTimeMillis();
 
@@ -94,7 +92,7 @@ public class LIGAExample2 {
 
                     String res = liga.classifyMostProbable(prep, 3);
 
-                    if (!res.equals(p.getLeft())) System.out.println(res + " " + p.getLeft() + " " + p.getRight());
+                    if (!res.equals(p.getLeft())) System.out.println(res + " " + p.getLeft() + " " + p.getRight() + " ----> " + prep);
 
                     switch (res) {
                         case "en":

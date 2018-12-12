@@ -24,15 +24,17 @@ public class LIGAExample {
         // Create LIGA instance
         LIGA liga = new LIGA.LIGABuilder(0.5).setLogLIGA(true).setMaxSearchDepth(1000).build();
 
-        TextFileLoader.readFilesToModelUpper(new File("I:\\Work\\datasets\\liga_publication_dataset"), liga, 3);
+        liga.loadModel("res" + File.separator + "model_orig.liga");
 
-        liga.saveModel("res" + File.separator + "model_orig.liga");
+        //TextFileLoader.readFilesToModelUpper(new File("I:\\Work\\datasets\\liga_publication_dataset"), liga, 3);
+
+        //liga.saveModel("res" + File.separator + "model_orig.liga");
 
         Map<String, Double> s1 = liga.classifyAll(Tokenizer.preprocess("absolutamente asqueroso"), 3); //es
         Map<String, Double> s2 =  liga.classifyAll(Tokenizer.preprocess("absolutely disgusting"), 3); //en
         Map<String, Double> s3 = liga.classifyAll(Tokenizer.preprocess("absolut eklig"), 3); //de
-        liga.classifyMostProbable(Tokenizer.preprocess("absolument dégoûtant"), 3); //fr
-        liga.classifyMostProbable(Tokenizer.preprocess("absoluut walgelijk"), 3); //nl
+        String s4 = liga.classifyMostProbable(Tokenizer.preprocess("absolument dégoûtant"), 3); //fr
+        String s5 = liga.classifyMostProbable(Tokenizer.preprocess("absoluut walgelijk"), 3); //nl
 
         liga.dropModel();
 

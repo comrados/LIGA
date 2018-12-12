@@ -83,6 +83,7 @@ public class ActiveLIGAExample {
         Map<String, Double> resultsR = learnerR.getResults();
         List<Map<String, Double>> intermediateResultsR = learnerR.getIntermediateResults();
         saveResults(samR, date, params, resultsR, intermediateResultsR);
+        liga.saveModel("res" + File.separator + "model_random.liga");
 
         System.exit(0);
     }
