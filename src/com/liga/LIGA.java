@@ -204,27 +204,40 @@ public class LIGA {
      * @param depth    current depth of recursion
      * @param maxDepth max allowed depth of recursion
      */
-    private Map<String, MutablePair<Integer, Integer>> recPathMatching(List<String> path,
-                                                                       HashMap<String, MutablePair<Integer, Integer>> counts,
-                                                                       Integer depth, Integer maxDepth) {
+    private List<Map<String, MutablePair<Integer, Integer>>> recPathMatching(List<String> path,
+                                                                                 List<Map<String, MutablePair<Integer, Integer>>> counts,
+                                                                                 Integer depth, Integer maxDepth) {
         if (depth > maxDepth || path.size() == 0)
             return counts; // Done traversing, return accumulator
         else if (path.size() == 1) {
+
+            HashMap<String, MutablePair<Integer, Integer>> ngramCounts = new HashMap<>();
+
             String ngram = path.get(0);
             // There is just one node left, just count node and disregard edges
             if (nodes.containsKey(ngram))
-                countNodes(ngram, counts);
+                countNodes(ngram, ngramCounts);
+
+            if (!ngramCounts.isEmpty())
+                counts.add(ngramCounts);
+
             return counts;
         } else {
+
+            HashMap<String, MutablePair<Integer, Integer>> ngramCounts = new HashMap<>();
+
             // Get source and target
             String source = path.get(0);
             String target = path.get(1);
 
             // First we update scores for the source node
             if (nodes.containsKey(source)) {
-                countNodes(source, counts);
-                countEdges(source, target, counts);
+                countNodes(source, ngramCounts);
+                countEdges(source, target, ngramCounts);
             }
+
+            if (!ngramCounts.isEmpty())
+                counts.add(ngramCounts);
 
             // Recurse with the trailing path
             path.remove(0);
@@ -289,7 +302,7 @@ public class LIGA {
             List<String> ngrams = getNgrams(doc, ngramLength);
 
             // Get counts
-            Map<String, MutablePair<Integer, Integer>> counts = recPathMatching(ngrams, new HashMap<>(), 0, maxSearchDepth);
+            List<Map<String, MutablePair<Integer, Integer>>> counts = recPathMatching(ngrams, new ArrayList<>(), 0, maxSearchDepth);
 
             // Calculate scores
             Map<String, Double> scores = calcScores(counts);
@@ -325,7 +338,7 @@ public class LIGA {
             List<String> ngrams = getNgrams(doc, ngramLength);
 
             // Get counts
-            Map<String, MutablePair<Integer, Integer>> counts = recPathMatching(ngrams, new HashMap<>(), 0, maxSearchDepth);
+            List<Map<String, MutablePair<Integer, Integer>>> counts = recPathMatching(ngrams, new ArrayList<>(), 0, maxSearchDepth);
 
             // Calculate scores
             scores = calcScores(counts);
@@ -338,11 +351,62 @@ public class LIGA {
      *
      * @param counts counts
      */
-    private Map<String, Double> calcScores(Map<String, MutablePair<Integer, Integer>> counts) {
-        Map<String, Double> scores = new HashMap<>();
-        for (Entry<String, MutablePair<Integer, Integer>> count : counts.entrySet())
-            scores.put(count.getKey(), calcScore(count));
-        return scores;
+    private Map<String, Double> calcScores(List<Map<String, MutablePair<Integer, Integer>>> counts) {
+        if (logLIGA){
+            return calcScoresLogLIGA(counts);
+        } else {
+            return calcScoresLIGA(counts);
+        }
+        //Map<String, Double> scores = new HashMap<>();
+    }
+
+    private Map<String, Double> calcScoresLIGA(List<Map<String, MutablePair<Integer, Integer>>> counts) {
+        Map<String, Double> total = new HashMap<>();
+
+        for (Map<String, MutablePair<Integer, Integer>> countMap: counts){
+            for (Entry<String, MutablePair<Integer, Integer>> count : countMap.entrySet()){
+                String lang = count.getKey(); // language
+                Integer nodes = count.getValue().getLeft(); // nodes count for language
+                Integer edges = count.getValue().getRight(); // edges count for language
+                Integer nodesTotal = counter.get(lang).getLeft(); // total number of nodes for language
+                Integer edgesTotal = counter.get(lang).getRight(); // total number of edges for language
+
+                double nodesNormalized = (double) nodes / (double) nodesTotal;
+                double edgesNormalized = (double) edges / (double) edgesTotal;
+
+                if (!total.containsKey(lang))
+                    total.put(lang, 0d);
+                total.put(lang, total.get(lang) + nodesNormalized + edgesNormalized);
+            }
+        }
+        return total;
+    }
+
+    private Map<String, Double> calcScoresLogLIGA(List<Map<String, MutablePair<Integer, Integer>>> counts) {
+        Map<String, Double> total = new HashMap<>();
+
+        for (Map<String, MutablePair<Integer, Integer>> countMap: counts){
+            for (Entry<String, MutablePair<Integer, Integer>> count : countMap.entrySet()){
+                String lang = count.getKey(); // language
+                Integer nodes = count.getValue().getLeft(); // nodes count for language
+                Integer edges = count.getValue().getRight(); // edges count for language
+                Integer nodesTotal = counter.get(lang).getLeft(); // total number of nodes for language
+                Integer edgesTotal = counter.get(lang).getRight(); // total number of edges for language
+
+                double nodesLogNormalized = 0d;
+                double edgesLogNormalized = 0d;
+
+                if ((nodes > 0) && (nodesTotal > 0))
+                    nodesLogNormalized = Math.log(nodes) / Math.log(nodesTotal);
+                if ((edges > 0) && (edgesTotal > 0))
+                    edgesLogNormalized = Math.log(edges) / Math.log(edgesTotal);
+
+                if (!total.containsKey(lang))
+                    total.put(lang, 0d);
+                total.put(lang, total.get(lang) + nodesLogNormalized + edgesLogNormalized);
+            }
+        }
+        return total;
     }
 
     /**
