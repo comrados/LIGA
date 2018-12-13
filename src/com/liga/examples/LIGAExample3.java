@@ -12,10 +12,7 @@ import com.liga.LIGA;
 import com.liga.Tokenizer;
 import org.apache.commons.lang3.tuple.MutablePair;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.List;
 
 public class LIGAExample3 {

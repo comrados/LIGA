@@ -9,13 +9,11 @@ package com.liga.examples;
 
 import com.liga.DataLoader;
 import com.liga.LIGA;
-import com.liga.TextFileLoader;
 import com.liga.Tokenizer;
 import org.apache.commons.lang3.tuple.MutablePair;
 
 import java.io.File;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Example of LIGA class usage
