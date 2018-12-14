@@ -13,7 +13,10 @@ import com.liga.Tokenizer;
 import org.apache.commons.lang3.tuple.MutablePair;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class LIGAExample3 {
 
@@ -33,7 +36,11 @@ public class LIGAExample3 {
 
         DataLoader dl = new DataLoader.DataLoaderBuilder().build();
 
-        dl.loadFromFile("D:\\ground-truth-out.csv", "\t", 1);
+        //dl.loadFromFile("D:\\ground-truth-out.csv", "\t", 1);
+
+        dl.loadFromFile("res\\data-train-new.txt", "\t", 1);
+
+        datasetStats(dl);
 
         long t1 = System.currentTimeMillis();
 
@@ -154,6 +161,55 @@ public class LIGAExample3 {
 
     private static String numToProc(double d){
         return String.format("%.3f", d*100) + "%";
+    }
+
+    private static void datasetStats(DataLoader dl){
+        Map<String, Double> countStats = new HashMap<>();
+        Map<String, List<Integer>> lengths = new HashMap<>();
+        for (MutablePair<String, String> entry: dl.dataset){
+            String lang = entry.getLeft();
+            Integer len = entry.getRight().length();
+            if (!countStats.containsKey(lang))
+                countStats.put(lang, 0d);
+            if (!lengths.containsKey(lang))
+                lengths.put(lang, new ArrayList<>());
+            countStats.put(lang, countStats.get(lang) + 1);
+            List<Integer> arr = lengths.get(lang);
+            arr.add(len);
+            lengths.put(lang, arr);
+        }
+
+        Map<String, Double> lengthStats = new HashMap<>();
+
+        Integer totalLength = 0;
+        Integer totalCounts = 0;
+
+        for (Map.Entry<String, List<Integer>> entry: lengths.entrySet()){
+            String lang = entry.getKey();
+            List<Integer> arr = entry.getValue();
+            Integer totalLang = 0;
+            for (Integer len: arr)
+                totalLang += len;
+            lengthStats.put(lang, (double) totalLang / (double) arr.size());
+            totalLength += totalLang;
+            totalCounts += arr.size();
+        }
+        System.out.println();
+        for (Map.Entry<String, Double> entry: countStats.entrySet()){
+            System.out.println(entry.getKey() + " " + entry.getValue());
+        }
+        System.out.println();
+        for (Map.Entry<String, Double> entry: lengthStats.entrySet()){
+            System.out.println(entry.getKey() + " " + entry.getValue());
+        }
+
+        System.out.println();
+
+        System.out.println("counts " + totalCounts);
+        System.out.println("length " + (double) totalLength / (double) totalCounts);
+
+        System.out.println();
+
     }
 
 }

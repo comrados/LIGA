@@ -360,6 +360,12 @@ public class LIGA {
         //Map<String, Double> scores = new HashMap<>();
     }
 
+    /**
+     * Calculates scores for default LIGA
+     *
+     * @param counts list ngram and ngram transitions counts for map of languages
+     * @return
+     */
     private Map<String, Double> calcScoresLIGA(List<Map<String, MutablePair<Integer, Integer>>> counts) {
         Map<String, Double> total = new HashMap<>();
 
@@ -382,6 +388,12 @@ public class LIGA {
         return total;
     }
 
+    /**
+     * Calculates scores for logLIGA. Linearizes exponentially distrubuted (according to the Zipf's law) ngrams
+     *
+     * @param counts list ngram and ngram transitions counts for map of languages
+     * @return
+     */
     private Map<String, Double> calcScoresLogLIGA(List<Map<String, MutablePair<Integer, Integer>>> counts) {
         Map<String, Double> total = new HashMap<>();
 
@@ -397,9 +409,9 @@ public class LIGA {
                 double edgesLogNormalized = 0d;
 
                 if ((nodes > 0) && (nodesTotal > 0))
-                    nodesLogNormalized = Math.log(nodes) / Math.log(nodesTotal);
+                    nodesLogNormalized = Math.log(nodes) / Math.log(nodesTotal); // linearized ngram frequencies
                 if ((edges > 0) && (edgesTotal > 0))
-                    edgesLogNormalized = Math.log(edges) / Math.log(edgesTotal);
+                    edgesLogNormalized = Math.log(edges) / Math.log(edgesTotal); // linearized ngram transition frequencies
 
                 if (!total.containsKey(lang))
                     total.put(lang, 0d);
@@ -407,33 +419,6 @@ public class LIGA {
             }
         }
         return total;
-    }
-
-    /**
-     * calculates score for LIGA or logLIGA
-     *
-     * @param count count entry
-     */
-    private double calcScore(Entry<String, MutablePair<Integer, Integer>> count) {
-        double score;
-        String lang = count.getKey(); // language
-        Integer nodes = count.getValue().getLeft(); // nodes count for language
-        Integer edges = count.getValue().getRight(); // edges count for language
-        Integer nodesTotal = counter.get(lang).getLeft(); // total number of nodes for language
-        Integer edgesTotal = counter.get(lang).getRight(); // total number of edges for language
-        if (logLIGA) {
-            score = (Math.log(nodes) / Math.log(nodesTotal)) + (Math.log(edges) / Math.log(edgesTotal));
-        } else {
-            score = ((double) nodes / nodesTotal) + ((double) edges / edgesTotal);
-        }
-
-        if (debug) {
-            double score1 = (Math.log(nodes) / Math.log(nodesTotal)) + (Math.log(edges) / Math.log(edgesTotal));
-            double score2 = ((double) nodes / nodesTotal) + ((double) edges / edgesTotal);
-            System.out.println(lang + "\t" + String.format("%.4f", score1) + "\t" + String.format("%.4f", score2));
-        }
-
-        return score;
     }
 
     /**
