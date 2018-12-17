@@ -27,9 +27,9 @@ public class DataLoader {
     private long seed; // shuffle seed
     private int shuffleN; //number of shufflings
 
-    public List<MutablePair<String, String>> train = new ArrayList<>(); // training data
-    public List<MutablePair<String, String>> test = new ArrayList<>(); // testing data
-    public List<MutablePair<String, String>> init = new ArrayList<>(); // initial labeled data
+    public List<MutablePair<String, String>> train; // training data
+    public List<MutablePair<String, String>> test; // testing data
+    public List<MutablePair<String, String>> init; // initial labeled data
 
     private double testDataPart; // test data %
     private double initDataPart; // initial-labeled data, part of training one (rest is used in active learning)
@@ -61,7 +61,7 @@ public class DataLoader {
     }
 
     /**
-     * Slow method, because of original data structure
+     * Slow method, because of the original data structure
      * Reads files from directory to model. Works with main (Upper) folder. Ignores non-folders (files).
      * Structure: main folder contains subfolders (language labels: "en", "de", etc.), which contain files with text (one file - one text)
      */
@@ -79,7 +79,7 @@ public class DataLoader {
     }
 
     /**
-     * Slow method, because of original data structure
+     * Slow method, because of the original data structure
      * Reads files from directory to model. Works with language (Lower) folders. Ignores non-files (directories).
      * Structure: main folder contains subfolders (language labels: "en", "de", etc.), which contain files with text (one file - one text)
      *
@@ -106,7 +106,7 @@ public class DataLoader {
     }
 
     /**
-     * Load all entries from the csv-like file. Entries are: lang_code, text. Entries are divided with separator
+     * Load all entries from the csv-like file. Rows are: lang_code, text. Columns are divided by separator
      *
      * @param path path to save the file
      * @param sep  separator
@@ -133,7 +133,7 @@ public class DataLoader {
     }
 
     /**
-     * Load all loaded entries to the csv-like file. Entries are: lang_code, text. Entries are divided with separator
+     * Save all loaded entries to the csv-like file. Rows are: lang_code, text. Columns are divided by separator
      *
      * @param path path to save the file
      * @param sep  separator
@@ -204,28 +204,34 @@ public class DataLoader {
      */
     public void dropDataset() {
         dataset.clear();
+        train.clear();
+        test.clear();
+        init.clear();
     }
 
     public boolean hasData() {
         return (dataset.size() > 0);
     }
 
+    public boolean hasTestData() {
+        return (dataset.size() > 0) && (train.size() > 0) && (test.size() > 0);
+    }
+
     /**
      * Splits original dataset (testing method)
      */
-    public void getTestData() {
+    public void splitData() {
 
         if (this.hasData()) {
             this.shuffleData();
-
             // get train and test sets
             train = splitBot(this.dataset, testDataPart);
-            test = splitTop(this.dataset, testDataPart);
+            test = new ArrayList<>(splitTop(this.dataset, testDataPart));
             // calculate threshold, free the memory
             //loader.dropDataset();
             // get sets for active learning
-            init = splitTop(train, initDataPart);
-            train = splitBot(train, initDataPart);
+            init = new ArrayList<>(splitTop(train, initDataPart));
+            train = new ArrayList<>(splitBot(train, initDataPart));
         } else {
             System.err.println("No data was loaded");
         }

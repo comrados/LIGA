@@ -50,7 +50,7 @@ public class ActiveLIGAExample {
 
         //dl.saveToFile("res\\original_data.csv", "\t");
 
-        dl.getTestData();
+        dl.splitData();
 
         // oracle instance
         Oracle ora = new AutoOracle();
