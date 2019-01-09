@@ -223,7 +223,6 @@ public class DataLoader {
     public void splitData() {
 
         if (this.hasData()) {
-            this.shuffleData();
             // get train and test sets
             train = splitBot(this.dataset, testDataPart);
             test = new ArrayList<>(splitTop(this.dataset, testDataPart));

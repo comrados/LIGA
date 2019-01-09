@@ -123,7 +123,11 @@ public class MarginSampler implements Sampler {
         List<Integer> excl = new ArrayList<>();
         List<MutablePair<String, String>> chosen = new ArrayList<>();
         int count = 0;
-        while (count < this.samplesBatch){
+        int limit = this.samplesBatch;
+        if (this.samplesBatch > train.size()){
+            limit = train.size();
+        }
+        while (count < limit){
             for (Map.Entry<Double, List<Integer>> entry : margins.entrySet()) {
                 for (Integer num: entry.getValue()){
                     if (count < this.samplesBatch){
@@ -147,8 +151,10 @@ public class MarginSampler implements Sampler {
     private void removeChosen(List<Integer> excl, List<MutablePair<String, String>> train){
         excl.sort(Collections.reverseOrder());
         for (Integer i: excl){
-            MutablePair<String, String> p = train.get(i);
-            train.remove(p);
+            if (i < train.size()){
+                MutablePair<String, String> p = train.get(i);
+                train.remove(p);
+            }
         }
     }
 

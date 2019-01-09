@@ -64,7 +64,11 @@ public class RandomSampler implements Sampler {
         List<Integer> excl = new ArrayList<>();
         List<MutablePair<String, String>> chosen = new ArrayList<>();
         int count = 0;
-        while (count < this.samplesBatch){
+        int limit = this.samplesBatch;
+        if (this.samplesBatch > train.size()){
+            limit = train.size();
+        }
+        while (count < limit){
             Integer randInt = random.nextInt(train.size());
             if (!excl.contains(randInt)){
                 chosen.add(train.get(randInt));
