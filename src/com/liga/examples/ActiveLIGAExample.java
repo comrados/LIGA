@@ -29,8 +29,10 @@ public class ActiveLIGAExample {
     public static void main(String[] args) {
 
         int batch = 10;
-        double test = 0.1;
+        double test = 0.3;
         double init = 0.01;
+        boolean afterSampling = true;
+        double trainActive = 0.05;
 
         String params = batch + "_" + init + "_" + test;
 
@@ -50,6 +52,8 @@ public class ActiveLIGAExample {
 
         //dl.saveToFile("res\\original_data.csv", "\t");
 
+        dl.shuffleData(0,25);
+
         dl.splitData();
 
         // oracle instance
@@ -62,11 +66,11 @@ public class ActiveLIGAExample {
         Sampler samR = new RandomSampler.RandomSamplerBuilder(batch).setSeed(0).build();
 
         // LIGA instance
-        LIGA liga = new LIGA.LIGABuilder(0.5).setLogLIGA(true).setMaxSearchDepth(1000).build();
+        LIGA liga = new LIGA.LIGABuilder(0.0).setLogLIGA(true).setMaxSearchDepth(1000).build();
 
         // margin sampler
         ActiveLearner learnerM = new ActiveLearner.ActiveLearnerBuilder(ora, samM, liga)
-                .setTrainThreshold(0.10).build();
+                .setTrainThreshold(trainActive).setRemainingLabeling(afterSampling).build();
         learnerM.setDatasets(dl.init, dl.train, dl.test);
         learnerM.learn();
         Map<String, Double> resultsM = learnerM.getResults();
@@ -77,7 +81,7 @@ public class ActiveLIGAExample {
         //clean model, start new learning
         liga.dropModel();
         ActiveLearner learnerR = new ActiveLearner.ActiveLearnerBuilder(ora, samR, liga)
-                .setTrainThreshold(0.10).build();
+                .setTrainThreshold(trainActive).setRemainingLabeling(afterSampling).build();
         learnerR.setDatasets(dl.init, dl.train, dl.test);
         learnerR.learn();
         Map<String, Double> resultsR = learnerR.getResults();
