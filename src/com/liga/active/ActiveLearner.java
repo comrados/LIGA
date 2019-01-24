@@ -112,12 +112,11 @@ public class ActiveLearner {
 
             //clear intermediate results and run initial one
             intermediateResults.clear();
-            intermediateResults.add(intermediateTest(iter, test, count));
+            intermediateTest(iter, test, count);
 
             do {
 
                 iter++;
-                if (debug) System.out.println("Iteration: " + iter);
 
                 scores = calcScores(train);
 
@@ -131,9 +130,9 @@ public class ActiveLearner {
                 liga.addDataset(samples, ngramLength);
                 count += samples.size();
 
-                if (debug) System.out.println("Training samples used: " + count);
+                if (debug) System.out.println("Iteration " + iter + ", Training samples used: " + count);
 
-                intermediateResults.add(intermediateTest(iter, test, count));
+                intermediateTest(iter, test, count);
 
             } while (count < trainLimit);
 
@@ -259,7 +258,7 @@ public class ActiveLearner {
      * @param iter iteration number
      * @param test test set
      */
-    private Map<String, Double> intermediateTest(int iter, List<MutablePair<String, String>> test, int instCount) {
+    private void intermediateTest(int iter, List<MutablePair<String, String>> test, int instCount) {
         Map<String, Double> results = new TreeMap<>();
 
         int count = 0;
@@ -289,7 +288,7 @@ public class ActiveLearner {
         results.put("testCorrectPart", (double) count / test.size());
         results.put("testWrongPart", (double) (test.size() - count) / test.size());
 
-        return results;
+        intermediateResults.add(results);
     }
 
     /**
@@ -297,9 +296,9 @@ public class ActiveLearner {
      *
      * @param test test set
      */
-    private Set<String> getLangsSet(List<MutablePair<String, String>> test){
+    private Set<String> getLangsSet(List<MutablePair<String, String>> test) {
         Set<String> langs = new HashSet<>();
-        for (MutablePair<String, String> p: test) {
+        for (MutablePair<String, String> p : test) {
             if (!p.getLeft().equals("UNKNOWN"))
                 langs.add(p.getLeft());
         }
@@ -309,9 +308,9 @@ public class ActiveLearner {
     /**
      * updates confusion matrices for all languages
      *
-     * @param matrix matrix to update
-     * @param curLang current language
-     * @param realLang real language label
+     * @param matrix    matrix to update
+     * @param curLang   current language
+     * @param realLang  real language label
      * @param modelLang language label, detected by model
      */
     protected static void confusionMatrixUpdate(Map<String, Map<String, Double>> matrix, String curLang, String realLang, String modelLang) {
@@ -378,11 +377,11 @@ public class ActiveLearner {
      *
      * @param matrix matrices
      */
-    protected static void calcPrecRecF1(Map<String, Map<String, Double>> matrix){
-        for(Map.Entry<String, Map<String, Double>> entry: matrix.entrySet()){
+    protected static void calcPrecRecF1(Map<String, Map<String, Double>> matrix) {
+        for (Map.Entry<String, Map<String, Double>> entry : matrix.entrySet()) {
             Map<String, Double> t = entry.getValue();
-            Double prec = t.get("TP")/(t.get("TP") + t.get("FP"));
-            Double rec = t.get("TP")/(t.get("TP") + t.get("FN"));
+            Double prec = t.get("TP") / (t.get("TP") + t.get("FP"));
+            Double rec = t.get("TP") / (t.get("TP") + t.get("FN"));
             Double f = 2.0 * prec * rec / (prec + rec);
             t.put("prec", prec);
             t.put("rec", rec);
